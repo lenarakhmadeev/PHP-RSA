@@ -1,8 +1,7 @@
 <?php
 
-// TODO : 100% coverage, refactoring
-
 require_once __DIR__ . '/../Math/BCMath.php';
+require_once __DIR__ . '/../RandomGenerator.php';
 
 /**
  * Test class for BCMath.
@@ -12,22 +11,23 @@ class BCMathTest extends PHPUnit_Framework_TestCase
 	/** @var BCMath */
 	protected $math;
 
-	function setUp()
+	public function setUp()
 	{
-		$this->math = new BCMath();
+		$random = new RandomGenerator();
+		$this->math = new BCMath($random);
 	}
 
-	function testMod()
+	public function testMod()
 	{
 		$this->assertEquals(8, $this->math->mod(107, 11));
 	}
 
-	function testGCF()
+	public function testGCF()
 	{
 		$this->assertEquals(9, $this->math->greatestCommonDivisor(45, 18));
 	}
 
-	function testPow()
+	public function testPow()
 	{
 		$this->assertEquals(19, $this->math->modularExponentiation(1234, 13, 27));
 	}
@@ -37,7 +37,7 @@ class BCMathTest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(4051753, $this->math->modularExponentiation(111111, 3, 9173503));
 	}
 
-	function testMult()
+	public function testMult()
 	{
 		$this->assertEquals(1942986, $this->math->mul(213, 9122));
 	}
@@ -45,12 +45,12 @@ class BCMathTest extends PHPUnit_Framework_TestCase
 	/**
 	 *@expectedException  InvalidArgumentException
 	 */
-	function testDontHaveMultInver()
+	public function testDontHaveMultInver()
 	{
 		$this->assertEquals(123, $this->math->multiplicativeInverse(21123, 123));
 	}
 
-	function testHaveMultInver()
+	public function testHaveMultInver()
 	{
 		$this->assertEquals(79, $this->math->multiplicativeInverse(21123, 122));
 	}
@@ -112,5 +112,35 @@ class BCMathTest extends PHPUnit_Framework_TestCase
 	{
 		$this->assertEquals(array(1, -1, 1), $this->math->extendedEuclidean(3, 2));
 		$this->assertEquals(array(-9, 47, 1), $this->math->extendedEuclidean(120, 23));
+	}
+
+	public function testCoprime()
+	{
+		$this->assertTrue($this->math->isCoprime('123', '17'));
+		$this->assertTrue($this->math->isCoprime('123', '16'));
+
+		$this->assertTrue(!$this->math->isCoprime('400', '5'));
+		$this->assertTrue(!$this->math->isCoprime('400', '20'));
+	}
+
+	public function testBin2Dec()
+	{
+		$bin = '1011010010';
+		$this->assertEquals('722', $this->math->bin2dec($bin));
+	}
+
+	public function testDec2Bin()
+	{
+		$dec = '722';
+
+		$this->assertEquals('1011010010', $this->math->dec2bin($dec));
+	}
+
+	public function testGeneratePrime()
+	{
+		$prime = $this->math->generatePrimeNumber(1024);
+
+		$this->assertEquals(1024, strlen($this->math->dec2bin($prime)));
+		$this->assertTrue($this->math->isPrime($prime));
 	}
 }

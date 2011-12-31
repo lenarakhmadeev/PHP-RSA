@@ -1,9 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../RSA.php';
+require_once __DIR__ . '/../RandomGenerator.php';
 require_once __DIR__ . '/../Math/BCMath.php';
-
-// TODO : 100% coverage, refactoring
 
 /**
  * Test class for RSA.
@@ -14,13 +13,14 @@ class RSATest extends PHPUnit_Framework_TestCase
 	/** @var RSA */
 	protected $RSA;
 
-	function setUp()
+	public function setUp()
 	{
-		$math = new BCMath();
+		$random = new RandomGenerator();
+		$math = new BCMath($random);
 		$this->RSA = new RSA($math);
 	}
 
-	function testGeneratePairFromPrime()
+	public function testGeneratePairFromPrime()
 	{
 		/*
 		1. p = 3, q = 11
@@ -44,7 +44,7 @@ class RSATest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(9173503, $n);
 	}
 
-	function testEncryptNumber()
+	public function testEncryptNumber()
 	{
 		$message = 111111;
 		$this->RSA->public_key = 3;
@@ -53,7 +53,7 @@ class RSATest extends PHPUnit_Framework_TestCase
 		$this->assertEquals(4051753, $this->RSA->encrypt($message));
 	}
 
-	function testDecryptNumber()
+	public function testDecryptNumber()
 	{
 		$encrypted_message = 4051753;
 		$this->RSA->private_key = 6111579;

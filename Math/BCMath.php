@@ -2,26 +2,55 @@
 
 class BCMath
 {
-	// TODO :  Random generator: Интерфейсдля реализаций, проверка
-	// TODO : Порядок
-
+	/**
+	 * @var RandomGenerator
+	 */
 	protected $random_generator;
 
-	/*public function __construct($random_generator)
+	public function __construct($random_generator)
 	{
 		$this->random_generator = $random_generator;
-	}*/
+	}
+
+	public function bin2dec($bin)
+	{
+		$dec = '0';
+		for ($i = 0, $len = strlen($bin); $i < $len; $i++) {
+
+			$dec = bcadd($this->mul($dec, '2'), $bin[$i]);
+		}
+
+		return $dec;
+	}
+
+	public function dec2bin($dec)
+	{
+		$bin = '';
+
+		do {
+			$bin = $this->mod($dec, '2') . $bin;
+			$dec = $this->div($dec, '2');
+		} while (!$this->isZero($dec));
+
+		return $bin;
+	}
+
 
 	/**
 	 * Decrement number
 	 *
-	 * @param string $num
+	 * @param string $number
 	 * @return string
 	 * @access public
 	 */
-	public function dec($num)
+	public function dec($number)
 	{
-		return bcsub($num, '1');
+		return bcsub($number, '1');
+	}
+
+	public function inc($number)
+	{
+		return bcadd($number, '1');
 	}
 
 	/**
@@ -74,6 +103,19 @@ class BCMath
 	}
 
 	/**
+	 * Is number1 divides to number2
+	 *
+	 * @param string $number1
+	 * @param string $number2
+	 * @return bool
+	 */
+	public function isDivides($number1, $number2)
+	{
+		$d = $this->mod($number1, $number2);
+		return $this->equal($d, '0');
+	}
+
+	/**
 	 * Is mod(number1, modulus) equal mod(number2, modulus)
 	 *
 	 * @param $number1
@@ -88,7 +130,6 @@ class BCMath
 			$this->mod($number2, $modulus));
 	}
 
-	// TODO :
 	/**
 	 * Generate prime number
 	 *
@@ -97,29 +138,13 @@ class BCMath
 	 */
 	public function generatePrimeNumber($length)
 	{
-		// TODO : ASasd
-		/*$bytes_n = intval($length / 8);
-		$bits_n = $length % 8;
-		do {
-			$str = '';
-			for ($i = 0; $i < $bytes_n; $i++) {
-				$str .= chr(call_user_func($random_generator) & 0xff);
-			}
-			$n = call_user_func($random_generator) & 0xff;
-			$n |= 0x80;
-			$n >>= 8 - $bits_n;
-			$str .= chr($n);
-			$num = $this->bin2int($str);
+		$bin_random = '1' . $this->random_generator->binRandom($length - 2) . '1';
+		$dec_random = $this->bin2dec($bin_random);
+		while (!$this->isPrime($dec_random)) {
+			$dec_random = $this->inc($dec_random);
+		}
 
-			// search for the next closest prime number after [$num]
-			if ($this->modularEqual($num, '0', '2')) {
-				$num = bcadd($num, '1');
-			}
-			while (!$this->isPrime($num)) {
-				$num = bcadd($num, '2');
-			}
-		} while ($this->bitLen($num) != $length);
-		return $num;*/
+		return $dec_random;
 	}
 
 	/**
@@ -137,11 +162,11 @@ class BCMath
 			return $tested[$number];
 		}
 
-		if ($this->modularEqual($number, 0, 2)) {
+		if ($this->isDivides($number, '2')) {
 			$is_prime =  true;
 		} else {
 			// TODO : LOG from BC number?
-			$is_prime =  $this->MillerRabin($number, log($number, 2));
+			$is_prime =  $this->MillerRabin($number, (int) log($number, 2));
 		}
 
 		$tested[$number] = $is_prime;
@@ -172,7 +197,6 @@ class BCMath
 		return bcmod($number, $modulus);
 	}
 
-	// TODO : name
 	/**
 	 * @param $number1
 	 * @param $number2
@@ -282,13 +306,13 @@ class BCMath
 	{
 		$s = 0;
 		$t = $this->dec($number);
-		while ($this->modularEqual($t, '0', '2')) {
+		while ($this->isDivides($t, '2')) {
 			$t = bcdiv($t, '2');
 			$s++;
 		}
 
-		for (; $rounds > 0; $rounds--) {
-			$a = mt_rand(2, min($number - 1, mt_getrandmax()));
+		for (; !$this->isZero($rounds); $rounds = $this->dec($rounds)) {
+			$a = $this->random_generator->random('2', $this->dec($number));
 			$x = $this->modularExponentiation($a, $t, $number);
 
 			if ($this->equal($x, '1') || $this->equal($x, $this->dec($number))) {
