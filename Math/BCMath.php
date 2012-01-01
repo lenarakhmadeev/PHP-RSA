@@ -2,16 +2,6 @@
 
 class BCMath
 {
-	/**
-	 * @var RandomGenerator
-	 */
-	protected $random_generator;
-
-	public function __construct($random_generator)
-	{
-		$this->random_generator = $random_generator;
-	}
-
 	public function bin2dec($bin)
 	{
 		$dec = '0';
@@ -138,7 +128,7 @@ class BCMath
 	 */
 	public function generatePrimeNumber($length)
 	{
-		$bin_random = '1' . $this->random_generator->binRandom($length - 2) . '1';
+		$bin_random = '1' . $this->binRandom($length - 2) . '1';
 		$dec_random = $this->bin2dec($bin_random);
 		while (!$this->isPrime($dec_random)) {
 			$dec_random = $this->inc($dec_random);
@@ -312,7 +302,7 @@ class BCMath
 		}
 
 		for (; !$this->isZero($rounds); $rounds = $this->dec($rounds)) {
-			$a = $this->random_generator->random('2', $this->dec($number));
+			$a = $this->random('2', $this->dec($number));
 			$x = $this->modularExponentiation($a, $t, $number);
 
 			if ($this->equal($x, '1') || $this->equal($x, $this->dec($number))) {
@@ -341,5 +331,23 @@ class BCMath
 		}
 
 		return true;
+	}
+
+	// TODO : asdasd
+
+	public function random($min, $max)
+	{
+		return mt_rand((int)$min, min((int)$max, mt_getrandmax()));
+	}
+
+	public function binRandom($length)
+	{
+		$bin = '';
+
+		while ($length--) {
+			$bin .= $this->random(0, 1);
+		}
+
+		return $bin;
 	}
 }

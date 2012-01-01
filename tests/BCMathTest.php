@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../Math/BCMath.php';
-require_once __DIR__ . '/../RandomGenerator.php';
 
 /**
  * Test class for BCMath.
@@ -13,8 +12,7 @@ class BCMathTest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$random = new RandomGenerator();
-		$this->math = new BCMath($random);
+		$this->math = new BCMath();
 	}
 
 	public function testMod()

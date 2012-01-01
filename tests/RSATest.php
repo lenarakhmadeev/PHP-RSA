@@ -1,7 +1,6 @@
 <?php
 
 require_once __DIR__ . '/../RSA.php';
-require_once __DIR__ . '/../RandomGenerator.php';
 require_once __DIR__ . '/../Math/BCMath.php';
 
 /**
@@ -15,9 +14,7 @@ class RSATest extends PHPUnit_Framework_TestCase
 
 	public function setUp()
 	{
-		$random = new RandomGenerator();
-		$math = new BCMath($random);
-		$this->RSA = new RSA($math);
+		$this->RSA = new RSA();
 	}
 
 	public function testGeneratePairFromPrime()
@@ -48,7 +45,7 @@ class RSATest extends PHPUnit_Framework_TestCase
 	{
 		$message = 111111;
 		$this->RSA->public_key = 3;
-		$this->RSA->N = 9173503;
+		$this->RSA->modulus = 9173503;
 
 		$this->assertEquals(4051753, $this->RSA->encrypt($message));
 	}
@@ -57,7 +54,7 @@ class RSATest extends PHPUnit_Framework_TestCase
 	{
 		$encrypted_message = 4051753;
 		$this->RSA->private_key = 6111579;
-		$this->RSA->N = 9173503;
+		$this->RSA->modulus = 9173503;
 
 		$this->assertEquals(111111, $this->RSA->decrypt($encrypted_message));
 	}

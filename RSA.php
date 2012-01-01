@@ -1,6 +1,10 @@
 <?php
 
 // TODO : Комментарии
+// TODO : рефакторинг
+
+// TODO : GMP
+// TODO : Интрефейс для MATH
 
 class RSA
 {
@@ -9,34 +13,28 @@ class RSA
 
 	public $public_key;
 	public $private_key;
-	public $N;
-	public $p;
-	public $q;
+	public $modulus;
 
-	public function __construct($math, $key_len = 32)
+	public function __construct($math = 'default')
 	{
-		$this->math = $math;
-		$this->generateKeys($key_len);
+		$this->loadMath($math);
 	}
 
-	public function generateKeys($key_len)
+	public function generateKeys($key_len = 1024)
 	{
 		// Generate two unequal prime numbers
-		$p_len = (int)(($key_len + 1) / 2);
-		$q_len = $key_len - $p_len;
+		$first_prime_len  = (int)(($key_len + 1) / 2);
+		$second_prime_len = $key_len - $first_prime_len;
 
 		do {
-			$p = $this->math->generatePrimeNumber($p_len);
-			$q = $this->math->generatePrimeNumber($q_len);
-		} while ($this->math->equal($p, $q));
-
-		$this->p = $p;
-		$this->q = $q;
+			$first_prime  = $this->math->generatePrimeNumber($first_prime_len);
+			$second_prime = $this->math->generatePrimeNumber($second_prime_len);
+		} while ($this->math->equal($first_prime, $second_prime));
 
 		// Generate keys
 		list($this->public_key,
 		     $this->private_key,
-		     $this->N) = $this->generateKeysPair($p, $q);
+		     $this->modulus) = $this->generateKeysPair($first_prime, $second_prime);
 	}
 
 	public function encrypt($message)
@@ -44,7 +42,7 @@ class RSA
 		return $this->math->modularExponentiation(
 			$message,
 			$this->public_key,
-			$this->N);
+			$this->modulus);
 	}
 
 	public function decrypt($encrypted_message)
@@ -52,32 +50,63 @@ class RSA
 		return $this->math->modularExponentiation(
 			$encrypted_message,
 			$this->private_key,
-			$this->N);
+			$this->modulus);
 	}
 
-	public function generateKeysPair($p, $q, $e = 65537)
+	// TODO : generate public if not set and example
+
+	public function generateKeysPair($first_prime, $second_prime, $public_key = 65537)
 	{
-		if (!$this->math->isPrime($p) || !$this->math->isPrime($q)) {
-			throw new InvalidArgumentException('$p and $q must be prime');
+		if (!$this->math->isPrime($first_prime) || !$this->math->isPrime($second_prime)) {
+			throw new InvalidArgumentException('$first_prime and $second_prime must be prime');
 		}
 
-		// Compute n = pq
-		$n = $this->math->mul($p, $q);
+		// Compute $modulus = $first_prime * $second_prime
+		$modulus = $this->math->mul($first_prime, $second_prime);
 
-		// Compute the totient of the product as ϕ(n) = (p − 1)(q − 1) giving
-		$dec_p = $this->math->dec($p);
-		$dec_q = $this->math->dec($q);
+		// Compute the totient of the product as ϕ($modulus) = ($first_prime − 1)($second_prime − 1) giving
+		$dec_p = $this->math->dec($first_prime);
+		$dec_q = $this->math->dec($second_prime);
 		$phi   = $this->math->mul($dec_p, $dec_q);
 
-		// Choose any number e that is coprime to ϕ(n)
-		if (!$this->math->isCoprime($e, $phi)) {
-			throw new InvalidArgumentException('e must be coprime to (p - 1)(q - 1)');
+		// Choose any number e that is coprime to ϕ($modulus)
+		if (!$this->math->isCoprime($public_key, $phi)) {
+			throw new InvalidArgumentException('public_key must be coprime to (first_prime - 1)(second_prime - 1)');
 		}
 
-		// Compute d, the modular multiplicative inverse of e (mod ϕ(n)) yielding
-		$d = $this->math->multiplicativeInverse($e, $phi);
+		// Compute $private_key, the modular multiplicative inverse of $public_key (mod ϕ($modulus)) yielding
+		$private_key = $this->math->multiplicativeInverse($public_key, $phi);
 
-		return array($e, $d, $n);
+		return array($public_key, $private_key, $modulus);
+	}
+
+	// TODO : Тесты и комменты
+
+	public static function keyToString($key, $modulus, $type)
+	{
+		return base64_encode(
+			serialize(
+				array($modulus, $key, $type)
+			));
+	}
+
+	public static function keyFromString($key_string_representation)
+	{
+		return unserialize(
+			base64_decode(
+				$key_string_representation
+			));
+	}
+
+
+	// TODO : Скан директории?
+	protected function loadMath($math_name)
+	{
+		$default = 'BCMath';
+
+		if ($math_name === 'default') {
+			$this->math = new $default();
+		}
 	}
 
 }
