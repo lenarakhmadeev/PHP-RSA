@@ -3,12 +3,11 @@
 // TODO : Комментарии
 // TODO : рефакторинг
 
-// TODO : GMP
-// TODO : Интрефейс для MATH
-
 class RSA
 {
-	/** @var BCMath */
+	/**
+	 * @var RSAMathInterface
+	 */
 	protected $math;
 
 	public $public_key;
@@ -98,14 +97,14 @@ class RSA
 			));
 	}
 
-
-	// TODO : Скан директории?
 	protected function loadMath($math_name)
 	{
-		$default = 'BCMath';
+		$default = 'GMP';
 
 		if ($math_name === 'default') {
 			$this->math = new $default();
+		} else {
+			$this->math = new $math_name();
 		}
 	}
 

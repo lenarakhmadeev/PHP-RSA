@@ -1,5 +1,7 @@
 <?php
 
+// TODO : real data
+
 // Generate key-pair and encrypt it
 $message = 'Hello, World!';
 $key_length = 1024;

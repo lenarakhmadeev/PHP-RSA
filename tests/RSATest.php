@@ -2,6 +2,7 @@
 
 require_once __DIR__ . '/../RSA.php';
 require_once __DIR__ . '/../Math/BCMath.php';
+require_once __DIR__ . '/../Math/GMP.php';
 
 /**
  * Test class for RSA.

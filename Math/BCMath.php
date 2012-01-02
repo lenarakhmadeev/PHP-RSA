@@ -1,6 +1,8 @@
 <?php
 
-class BCMath
+require_once 'math_interface.php';
+
+class BCMath implements RSAMathInterface
 {
 	public function bin2dec($bin)
 	{
